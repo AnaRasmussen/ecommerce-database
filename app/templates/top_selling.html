@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Top Selling Products This Quarter</h1>
+
+<!-- Chart -->
+<canvas id="topSellingChart" width="600" height="400" class="mx-auto"></canvas>
+
+<script>
+const ctx = document.getElementById('topSellingChart').getContext('2d');
+const topSellingChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: JSON.parse('{{ products | map(attribute=0) | list | tojson | safe }}'),
+        datasets: [{
+            label: 'Units Sold',
+            data: JSON.parse('{{ products | map(attribute=1) | list | tojson | safe }}'),
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
+<!-- Table -->
+<div class="mt-10">
+    <h2 class="text-xl font-semibold mb-4">Detailed Top Sellers</h2>
+    <table class="table-auto w-full bg-white rounded shadow">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="px-4 py-2">Product</th>
+                <th class="px-4 py-2">Units Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for name, total_sold in products %}
+            <tr>
+                <td class="border px-4 py-2">{{ name }}</td>
+                <td class="border px-4 py-2">{{ total_sold }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

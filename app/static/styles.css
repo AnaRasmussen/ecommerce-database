@@ -1,0 +1,23 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f5f5f5;
+}
+
+h1 {
+    color: #333;
+}
+
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title if title else "E-commerce Dashboard" }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <nav class="bg-blue-600 text-white p-4">
+        <ul class="flex gap-6">
+            <li><a href="/" class="hover:underline">Home</a></li>
+            <li><a href="/products" class="hover:underline">Products</a></li>
+            <li><a href="/top-rated" class="hover:underline">Top Rated</a></li>
+            <li><a href="/top-selling" class="hover:underline">Top Selling</a></li>
+            <li><a href="/repeat-customers" class="hover:underline">Repeat Customers</a></li>
+            <li><a href="/abandoned" class="hover:underline">Abandoned Products</a></li>
+        </ul>
+    </nav>
+    
+    <main class="flex-grow container mx-auto p-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="text-center text-gray-500 p-4 text-sm">
+        E-commerce Dashboard Project © 2024
+    </footer>
+</body>
+</html>

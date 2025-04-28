@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Top Rated Products</h1>
+<table class="table-auto w-full bg-white rounded shadow">
+    <thead>
+        <tr class="bg-gray-200">
+            <th class="px-4 py-2">Product</th>
+            <th class="px-4 py-2">Average Rating</th>
+            <th class="px-4 py-2">Reviews</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for name, avg_rating, num_reviews in products %}
+        <tr>
+            <td class="border px-4 py-2">{{ name }}</td>
+            <td class="border px-4 py-2">{{ avg_rating }}</td>
+            <td class="border px-4 py-2">{{ num_reviews }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% if products %}
+<table class="table-auto w-full bg-white rounded shadow mb-8">
+    <thead>
+        <tr class="bg-gray-200">
+            <th class="px-4 py-2">Product</th>
+            <th class="px-4 py-2">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for id, name, price in products %}
+        <tr>
+            <td class="border px-4 py-2">{{ name }}</td>
+            <td class="border px-4 py-2">${{ price }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Checkout button -->
+<form method="POST" action="/checkout">
+    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded mr-4">
+        ✅ Checkout
+    </button>
+</form>
+
+<!-- Abandon Cart button -->
+<form method="POST" action="/abandon-cart" class="mt-4">
+    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded">
+        🛑 Abandon Cart
+    </button>
+</form>
+
+{% else %}
+<p class="text-gray-500">Your cart is empty.</p>
+{% endif %}

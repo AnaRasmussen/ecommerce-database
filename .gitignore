@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtualenv
+.venv/
+
+# Mac OS
+.DS_Store
+
+# Database (optional if you want)
+database/dummy_data.sql
