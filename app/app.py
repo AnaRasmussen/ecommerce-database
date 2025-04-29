@@ -315,7 +315,7 @@ def abandon_cart():
     flash('You abandoned your cart.')
     return redirect(url_for('products'))
 
-@app.route('/product-affinity')
+@app.route('/product_affinity')
 def product_affinity():
     conn = get_connection()
     cur = conn.cursor()

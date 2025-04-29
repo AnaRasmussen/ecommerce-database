@@ -103,7 +103,7 @@ LIMIT 10;</code></pre>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ percentage }}%"></div>
+                                    <div class="progress-bar bg-blue-600 h-2.5 rounded-full" data-percentage="{{ percentage }}"></div>
                                 </div>
                                 <span class="text-sm text-gray-600">{{ percentage }}%</span>
                             </div>
@@ -137,5 +137,20 @@ LIMIT 10;</code></pre>
             </div>
         </div>
     </div>
+
+    <style>
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.progress-bar').forEach(function(bar) {
+                const percentage = bar.getAttribute('data-percentage');
+                bar.style.width = percentage + '%';
+            });
+        });
+    </script>
 </div>
 {% endblock %} 
