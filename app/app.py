@@ -508,92 +508,131 @@ def database_visualization():
         pg_conn.close()
         mongo_client.close()
 
-@app.route('/database-comparison')
+@app.route('/database_comparison')
 def database_comparison():
-    # PostgreSQL examples
-    pg_conn = get_connection()
-    pg_cur = pg_conn.cursor()
-    
-    # Example 1: Complex JOIN query
-    pg_cur.execute("""
-        SELECT u.name, COUNT(o.order_id) as order_count, 
-               SUM(o.total_amount) as total_spent,
-               AVG(r.rating) as avg_rating
-        FROM users u
-        LEFT JOIN orders o ON u.user_id = o.user_id
-        LEFT JOIN reviews r ON u.user_id = r.user_id
-        GROUP BY u.name
-        ORDER BY total_spent DESC
-        LIMIT 5
-    """)
-    pg_complex_query = pg_cur.fetchall()
-    
-    # Example 2: Transaction example
-    pg_cur.execute("""
-        SELECT COUNT(*) as total_products,
-               AVG(price) as avg_price,
-               MIN(price) as min_price,
-               MAX(price) as max_price
-        FROM products
-    """)
-    pg_aggregation = pg_cur.fetchone()
-    
-    pg_conn.close()
-    
-    # MongoDB examples
-    mongo_client = MongoClient('mongodb://localhost:27017/')
-    mongo_db = mongo_client['ecommerce_mongodb']
-    
-    # Example 1: Complex aggregation
-    mongo_complex_query = list(mongo_db.users.aggregate([
-        {
-            "$lookup": {
-                "from": "orders",
-                "localField": "_id",
-                "foreignField": "user_id",
-                "as": "orders"
-            }
-        },
-        {
-            "$lookup": {
-                "from": "reviews",
-                "localField": "_id",
-                "foreignField": "user_id",
-                "as": "reviews"
-            }
-        },
-        {
-            "$project": {
-                "name": 1,
-                "order_count": {"$size": "$orders"},
-                "total_spent": {"$sum": "$orders.total_amount"},
-                "avg_rating": {"$avg": "$reviews.rating"}
-            }
-        },
-        {"$sort": {"total_spent": -1}},
-        {"$limit": 5}
-    ]))
-    
-    # Example 2: Aggregation example
-    mongo_aggregation = list(mongo_db.products.aggregate([
-        {
-            "$group": {
-                "_id": None,
-                "total_products": {"$sum": 1},
-                "avg_price": {"$avg": "$price"},
-                "min_price": {"$min": "$price"},
-                "max_price": {"$max": "$price"}
-            }
-        }
-    ]))[0]
-    
-    mongo_client.close()
-    
-    return render_template('database_comparison.html',
-                         pg_complex_query=pg_complex_query,
-                         pg_aggregation=pg_aggregation,
-                         mongo_complex_query=mongo_complex_query,
-                         mongo_aggregation=mongo_aggregation)
+    try:
+        print("=== Database Comparison Route Hit ===")
+        print(f"Request method: {request.method}")
+        print(f"Request path: {request.path}")
+        print(f"Request headers: {dict(request.headers)}")
+        
+        pg_error = None
+        mongo_error = None
+        pg_complex_query = []
+        pg_aggregation = None
+        mongo_complex_query = []
+        mongo_aggregation = None
+
+        # Try PostgreSQL connection first
+        try:
+            print("Attempting PostgreSQL connection...")
+            pg_conn = get_connection()
+            pg_cur = pg_conn.cursor()
+            
+            # Example 1: Complex JOIN query
+            print("Executing PostgreSQL complex query...")
+            pg_cur.execute("""
+                SELECT u.name, COUNT(o.order_id) as order_count, 
+                       SUM(o.total_amount) as total_spent,
+                       AVG(r.rating) as avg_rating
+                FROM users u
+                LEFT JOIN orders o ON u.user_id = o.user_id
+                LEFT JOIN reviews r ON u.user_id = r.user_id
+                GROUP BY u.name
+                ORDER BY total_spent DESC
+                LIMIT 5
+            """)
+            pg_complex_query = pg_cur.fetchall()
+            
+            # Example 2: Transaction example
+            print("Executing PostgreSQL aggregation query...")
+            pg_cur.execute("""
+                SELECT COUNT(*) as total_products,
+                       AVG(price) as avg_price,
+                       MIN(price) as min_price,
+                       MAX(price) as max_price
+                FROM products
+            """)
+            pg_aggregation = pg_cur.fetchone()
+            
+            pg_conn.close()
+            print("PostgreSQL queries completed successfully")
+            
+        except Exception as e:
+            print(f"PostgreSQL error: {str(e)}")
+            pg_error = f"PostgreSQL connection error: {str(e)}"
+        
+        # Try MongoDB connection
+        try:
+            print("Attempting MongoDB connection...")
+            mongo_client = MongoClient('mongodb://localhost:27017/')
+            mongo_db = mongo_client['ecommerce_mongodb']
+            
+            # Example 1: Complex aggregation
+            print("Executing MongoDB complex query...")
+            mongo_complex_query = list(mongo_db.users.aggregate([
+                {
+                    "$lookup": {
+                        "from": "orders",
+                        "localField": "_id",
+                        "foreignField": "user_id",
+                        "as": "orders"
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "reviews",
+                        "localField": "_id",
+                        "foreignField": "user_id",
+                        "as": "reviews"
+                    }
+                },
+                {
+                    "$project": {
+                        "name": 1,
+                        "order_count": {"$size": "$orders"},
+                        "total_spent": {"$sum": "$orders.total_amount"},
+                        "avg_rating": {"$avg": "$reviews.rating"}
+                    }
+                },
+                {"$sort": {"total_spent": -1}},
+                {"$limit": 5}
+            ]))
+            
+            # Example 2: Aggregation example
+            print("Executing MongoDB aggregation query...")
+            mongo_aggregation = list(mongo_db.products.aggregate([
+                {
+                    "$group": {
+                        "_id": None,
+                        "total_products": {"$sum": 1},
+                        "avg_price": {"$avg": "$price"},
+                        "min_price": {"$min": "$price"},
+                        "max_price": {"$max": "$price"}
+                    }
+                }
+            ]))[0]
+            
+            mongo_client.close()
+            print("MongoDB queries completed successfully")
+            
+        except Exception as e:
+            print(f"MongoDB error: {str(e)}")
+            mongo_error = f"MongoDB connection error: {str(e)}"
+        
+        print("=== Rendering Template ===")
+        # Render template with all data and any errors
+        return render_template('database_comparison.html',
+                             pg_complex_query=pg_complex_query,
+                             pg_aggregation=pg_aggregation,
+                             mongo_complex_query=mongo_complex_query,
+                             mongo_aggregation=mongo_aggregation,
+                             pg_error=pg_error,
+                             mongo_error=mongo_error)
+        
+    except Exception as e:
+        print(f"Unexpected error in database_comparison route: {str(e)}")
+        return render_template('error.html', error=str(e))
 
 @app.route('/customer-behavior')
 def customer_behavior():
@@ -719,7 +758,20 @@ def customer_behavior():
     
     return render_template('customer_behavior.html', analysis=analysis)
 
+@app.errorhandler(Exception)
+def handle_error(error):
+    """Global error handler that shows our custom error page"""
+    print(f"=== Error occurred: {str(error)} ===")
+    return render_template('error.html', error=str(error)), 500
+
+@app.route('/test-error')
+def test_error():
+    """Test route that intentionally raises an exception to test error handling"""
+    print("=== Test Error Route Hit ===")
+    raise Exception("This is a test error to verify error page functionality")
+
 # === End of app ===
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    print("Starting Flask server...")
+    app.run(host='0.0.0.0', port=5001, debug=True)
