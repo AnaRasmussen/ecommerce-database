@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Data Overview</h1>
+    
+    <!-- Key Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <!-- Products -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Products</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ total_products }}</p>
+        </div>
+        
+        <!-- Orders -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Orders</h3>
+            <p class="text-3xl font-bold text-green-600">{{ total_orders }}</p>
+        </div>
+        
+        <!-- Revenue -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Revenue</h3>
+            <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_revenue) }}</p>
+        </div>
+        
+        <!-- Users -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Users</h3>
+            <p class="text-3xl font-bold text-orange-600">{{ total_users }}</p>
+        </div>
+    </div>
+    
+    <!-- Secondary Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <!-- Average Order Value -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Average Order Value</h3>
+            <p class="text-2xl font-bold text-blue-600">${{ "%.2f"|format(avg_order_value) }}</p>
+        </div>
+        
+        <!-- Reviews -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Reviews</h3>
+            <p class="text-2xl font-bold text-green-600">{{ total_reviews }}</p>
+        </div>
+        
+        <!-- Average Rating -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Average Rating</h3>
+            <p class="text-2xl font-bold text-purple-600">{{ "%.1f"|format(avg_rating) }}/5.0</p>
+        </div>
+        
+        <!-- Abandonment Rate -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Cart Abandonment Rate</h3>
+            <p class="text-2xl font-bold text-orange-600">{{ "%.1f"|format(abandonment_rate) }}%</p>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-12">
+        <h2 class="text-2xl font-bold mb-6">Recent Orders</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left">Order ID</th>
+                        <th class="px-4 py-2 text-left">Customer</th>
+                        <th class="px-4 py-2 text-left">Date</th>
+                        <th class="px-4 py-2 text-right">Amount</th>
+                        <th class="px-4 py-2 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order_id, customer, date, amount, status in recent_orders %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">{{ order_id[:8] }}...</td>
+                        <td class="px-4 py-2">{{ customer }}</td>
+                        <td class="px-4 py-2">{{ date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="px-4 py-2 text-right">${{ "%.2f"|format(amount) }}</td>
+                        <td class="px-4 py-2">
+                            <span class="px-2 py-1 rounded-full text-sm 
+                                {% if status == 'completed' %}bg-green-100 text-green-800
+                                {% elif status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Top Products by Revenue -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-6">Top Products by Revenue</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left">Product</th>
+                        <th class="px-4 py-2 text-right">Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, revenue in top_products %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">{{ name }}</td>
+                        <td class="px-4 py-2 text-right">${{ "%.2f"|format(revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

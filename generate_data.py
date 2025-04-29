@@ -6,10 +6,10 @@ from faker import Faker
 faker = Faker()
 
 # === Settings ===
-NUM_USERS = 50
+NUM_USERS = 100
 NUM_PRODUCTS = 30
-NUM_ORDERS = 100
-NUM_REVIEWS = 70
+NUM_ORDERS = 200
+NUM_REVIEWS = 80
 NUM_CARTS = 50
 NUM_SESSIONS = 80
 
@@ -31,14 +31,65 @@ def generate_users():
 
 def generate_products():
     products = []
-    categories = ['Electronics', 'Apparel', 'Home', 'Beauty', 'Toys']
+    # Electronics-specific categories
+    categories = ['Smartphones', 'Accessories', 'Audio', 'Charging', 'Cases']
+    
+    # Electronics product types and their variations with realistic price ranges
+    product_types = {
+        'Smartphones': [
+            ('iPhone', (699, 1299)),
+            ('Samsung Galaxy', (599, 1199)),
+            ('Google Pixel', (499, 899)),
+            ('OnePlus', (399, 799))
+        ],
+        'Accessories': [
+            ('Screen Protector', (9, 49)),
+            ('Stylus', (29, 129)),
+            ('Smart Watch', (199, 499)),
+            ('Fitness Tracker', (79, 299))
+        ],
+        'Audio': [
+            ('Wireless Earbuds', (49, 299)),
+            ('Headphones', (99, 399)),
+            ('Bluetooth Speaker', (79, 349)),
+            ('Soundbar', (199, 999))
+        ],
+        'Charging': [
+            ('Wireless Charger', (19, 99)),
+            ('Power Bank', (29, 149)),
+            ('USB-C Cable', (9, 39)),
+            ('Car Charger', (19, 59))
+        ],
+        'Cases': [
+            ('Phone Case', (19, 79)),
+            ('Tablet Case', (29, 99)),
+            ('Laptop Sleeve', (39, 129)),
+            ('Smart Watch Band', (19, 99))
+        ]
+    }
+    
+    # Product variations
+    variations = ['Pro', 'Max', 'Lite', 'Air', 'Plus', 'Ultra']
+    
+    # Keep track of used combinations to avoid duplicates
+    used_combinations = set()
+    
     for _ in range(NUM_PRODUCTS):
-        product_id = random_uuid()
-        name = (faker.word().capitalize() + " " + random.choice(["Pro", "Max", "Lite", "XL", "Mini"])).replace("'", "''")
-        category = random.choice(categories)
-        price = round(random.uniform(10, 1000), 2)
-        created_at = faker.date_time_between(start_date='-6M', end_date='now')
-        products.append((product_id, name, category, price, created_at))
+        while True:
+            category = random.choice(categories)
+            product_type, (min_price, max_price) = random.choice(product_types[category])
+            variation = random.choice(variations)
+            name = f"{product_type} {variation}"
+            
+            # Check if this combination has been used
+            if name not in used_combinations:
+                used_combinations.add(name)
+                product_id = random_uuid()
+                price = round(random.uniform(min_price, max_price), 2)
+                created_at = faker.date_time_between(start_date='-6M', end_date='now')
+                products.append((product_id, name, category, price, created_at))
+                break
+    
     return products
 
 def generate_orders(valid_user_ids):

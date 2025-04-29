@@ -3,7 +3,7 @@ from psycopg2 import sql
 
 # Change these according to your local setup
 DB_NAME = "postgres"
-DB_USER = "analiese_rasmussen"     # <— YOUR macOS username!
+DB_USER = "carterrobinson"     # <— YOUR macOS username!
 DB_PASSWORD = ""                   # probably no password
 DB_HOST = "localhost"
 DB_PORT = "5432"
