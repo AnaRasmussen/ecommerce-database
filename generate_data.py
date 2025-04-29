@@ -6,12 +6,12 @@ from faker import Faker
 faker = Faker()
 
 # === Settings ===
-NUM_USERS = 100
-NUM_PRODUCTS = 30
-NUM_ORDERS = 200
-NUM_REVIEWS = 80
-NUM_CARTS = 50
-NUM_SESSIONS = 80
+NUM_USERS = 200
+NUM_PRODUCTS = 50
+NUM_ORDERS = 500
+NUM_REVIEWS = 300
+NUM_CARTS = 100
+NUM_SESSIONS = 200
 
 def random_uuid():
     return str(uuid.uuid4())
@@ -94,7 +94,16 @@ def generate_products():
 
 def generate_orders(valid_user_ids):
     orders = []
-    for _ in range(NUM_ORDERS):
+    # Ensure each user has at least one order
+    for user_id in valid_user_ids:
+        order_id = random_uuid()
+        order_date = faker.date_time_between(start_date='-3M', end_date='now')
+        status = random.choice(['pending', 'completed'])
+        total_amount = round(random.uniform(20, 500), 2)
+        orders.append((order_id, user_id, order_date, status, total_amount))
+    
+    # Add additional random orders
+    for _ in range(NUM_ORDERS - len(valid_user_ids)):
         order_id = random_uuid()
         user_id = random.choice(valid_user_ids)
         order_date = faker.date_time_between(start_date='-3M', end_date='now')
@@ -116,7 +125,18 @@ def generate_order_items(order_list, product_ids):
 
 def generate_reviews(valid_user_ids, product_ids):
     reviews = []
-    for _ in range(NUM_REVIEWS):
+    # Ensure each product has at least 2 reviews
+    for product_id in product_ids:
+        for _ in range(2):
+            review_id = random_uuid()
+            user_id = random.choice(valid_user_ids)
+            rating = random.randint(3, 5)  # Bias towards positive reviews
+            comment = faker.sentence().replace("'", "''")
+            review_date = faker.date_time_between(start_date='-6M', end_date='now')
+            reviews.append((review_id, user_id, product_id, rating, comment, review_date))
+    
+    # Add additional random reviews
+    for _ in range(NUM_REVIEWS - (len(product_ids) * 2)):
         review_id = random_uuid()
         user_id = random.choice(valid_user_ids)
         product_id = random.choice(product_ids)

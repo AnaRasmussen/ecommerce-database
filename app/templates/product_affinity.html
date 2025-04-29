@@ -1,65 +1,139 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8 text-center">Product Affinity Analysis</h1>
-    
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="p-6">
-            <p class="text-gray-600 mb-8 text-center">
-                Discover which products are frequently purchased together. The affinity percentage shows how often 
-                Product 2 is bought when Product 1 is purchased.
-            </p>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Product Affinity Analysis</h1>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product 1</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product 2</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Times Bought Together</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affinity Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for product1, product2, count, percentage in pairs %}
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product1 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product2 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ count }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div class="flex items-center">
-                                    <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
-                                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ percentage }}%"></div>
-                                    </div>
-                                    <span>{{ percentage }}%</span>
+    <!-- Query Showcase -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Query Used</h2>
+        <div class="bg-gray-100 p-4 rounded">
+            <pre class="text-sm overflow-x-auto"><code>WITH order_pairs AS (
+    SELECT oi1.order_id, oi1.product_id as product1_id, oi2.product_id as product2_id
+    FROM order_items oi1
+    JOIN order_items oi2 ON oi1.order_id = oi2.order_id
+    WHERE oi1.product_id < oi2.product_id
+),
+pair_counts AS (
+    SELECT 
+        p1.name as product1_name,
+        p2.name as product2_name,
+        COUNT(DISTINCT op.order_id) as times_bought_together,
+        ROUND(COUNT(DISTINCT op.order_id) * 100.0 / (
+            SELECT COUNT(DISTINCT order_id) 
+            FROM order_pairs
+        ), 2) as affinity_percentage
+    FROM order_pairs op
+    JOIN products p1 ON op.product1_id = p1.product_id
+    JOIN products p2 ON op.product2_id = p2.product_id
+    GROUP BY p1.name, p2.name
+)
+SELECT 
+    product1_name,
+    product2_name,
+    times_bought_together,
+    affinity_percentage
+FROM pair_counts
+ORDER BY times_bought_together DESC
+LIMIT 10;</code></pre>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">This query identifies which products are frequently purchased together, helping to understand customer buying patterns and potential bundle opportunities.</p>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Product Affinity Visualization</h2>
+        <canvas id="affinityChart" width="600" height="400" class="mx-auto"></canvas>
+    </div>
+
+    <script>
+    const ctx = document.getElementById('affinityChart').getContext('2d');
+    const affinityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: JSON.parse('{{ product_pairs | map(attribute=0) | list | tojson | safe }}').map((name, i) => 
+                `${name} & ${JSON.parse('{{ product_pairs | map(attribute=1) | list | tojson | safe }}')[i]}`
+            ),
+            datasets: [{
+                label: 'Times Bought Together',
+                data: JSON.parse('{{ product_pairs | map(attribute=2) | list | tojson | safe }}'),
+                backgroundColor: 'rgba(59, 130, 246, 0.6)', // Tailwind blue-500
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Times Bought Together'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Product Pairs'
+                    }
+                }
+            }
+        }
+    });
+    </script>
+
+    <!-- Table with Progress Bars -->
+    <div class="mt-10">
+        <h2 class="text-xl font-semibold mb-4">Detailed Affinity Data</h2>
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product 1</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product 2</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Times Bought Together</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affinity Percentage</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for product1, product2, count, percentage in product_pairs %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product2 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ count }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ percentage }}%"></div>
                                 </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                                <span class="text-sm text-gray-600">{{ percentage }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold mb-4">How to Use This Data</h2>
+    <!-- Insights Section -->
+    <div class="mt-10 bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">How to Use This Data</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-blue-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-blue-800 mb-2">Product Recommendations</h3>
-                <p class="text-blue-700">Use this data to suggest complementary products to customers. For example, if someone buys Product 1, recommend Product 2.</p>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Product Recommendations</h3>
+                <p class="text-gray-600">Use these insights to suggest complementary products to customers when they're viewing one of the paired items.</p>
             </div>
-            <div class="bg-green-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-green-800 mb-2">Bundle Opportunities</h3>
-                <p class="text-green-700">Create product bundles for items that are frequently purchased together to increase average order value.</p>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Bundle Opportunities</h3>
+                <p class="text-gray-600">Create product bundles for items that are frequently purchased together, potentially offering a discount to increase sales.</p>
             </div>
-            <div class="bg-purple-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-purple-800 mb-2">Cross-Selling</h3>
-                <p class="text-purple-700">Train your sales team to suggest these product pairs during customer interactions.</p>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Cross-Selling</h3>
+                <p class="text-gray-600">Implement targeted cross-selling strategies based on these product relationships.</p>
             </div>
-            <div class="bg-yellow-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-yellow-800 mb-2">Marketing Campaigns</h3>
-                <p class="text-yellow-700">Design targeted marketing campaigns around these product pairs to increase conversion rates.</p>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Marketing Campaigns</h3>
+                <p class="text-gray-600">Design marketing campaigns that highlight complementary products and their benefits when used together.</p>
             </div>
         </div>
     </div>

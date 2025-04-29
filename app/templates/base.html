@@ -8,16 +8,21 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-blue-600 text-white p-4">
-        <ul class="flex gap-6">
-            <li><a href="/" class="hover:underline">Home</a></li>
-            <li><a href="/products" class="hover:underline">Products</a></li>
-            <li><a href="/top-rated" class="hover:underline">Top Rated</a></li>
-            <li><a href="/top-selling" class="hover:underline">Top Selling</a></li>
-            <li><a href="/repeat-customers" class="hover:underline">Repeat Customers</a></li>
-            <li><a href="/abandoned" class="hover:underline">Abandoned Products</a></li>
-            <li><a href="/product-affinity" class="hover:underline">Product Affinity</a></li>
-            <li><a href="/data-overview" class="hover:underline">Data Overview</a></li>
-        </ul>
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-xl font-bold">E-commerce DB</a>
+            <div class="space-x-4">
+                <a href="{{ url_for('index') }}" class="hover:text-blue-200">Home</a>
+                <a href="{{ url_for('products') }}" class="hover:text-blue-200">Products</a>
+                <a href="{{ url_for('top_rated') }}" class="hover:text-blue-200">Top Rated</a>
+                <a href="{{ url_for('top_selling') }}" class="hover:text-blue-200">Top Selling</a>
+                <a href="{{ url_for('repeat_customers') }}" class="hover:text-blue-200">Repeat Customers</a>
+                <a href="{{ url_for('abandoned') }}" class="hover:text-blue-200">Abandoned Products</a>
+                <a href="{{ url_for('product_affinity') }}" class="hover:text-blue-200">Product Affinity</a>
+                <a href="{{ url_for('customer_behavior') }}" class="hover:text-blue-200">Customer Behavior</a>
+                <a href="{{ url_for('database_comparison') }}" class="hover:text-blue-200">DB Comparison</a>
+                <a href="{{ url_for('database_visualization') }}" class="hover:text-blue-200">DB Visualization</a>
+            </div>
+        </div>
     </nav>
     
     <main class="flex-grow container mx-auto p-8">

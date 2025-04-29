@@ -2,7 +2,7 @@
 
 A full-stack simulation of an e-commerce backend and frontend system, with real-time analytics dashboards.
 
-Built using **PostgreSQL**, **Flask**, **Tailwind CSS**, and **Chart.js**.
+Built using **PostgreSQL**, **MongoDB**, **Flask**, **Tailwind CSS**, and **Chart.js**.
 
 ---
 
@@ -15,6 +15,9 @@ Built using **PostgreSQL**, **Flask**, **Tailwind CSS**, and **Chart.js**.
   - Top Selling Products (this quarter)
   - Repeat Customers (month-over-month)
   - Most Abandoned Products (based on cart activity)
+  - Product Affinity Analysis (frequently bought together)
+  - Customer Behavior Analysis (segments, patterns, trends)
+  - Database Comparison (PostgreSQL vs MongoDB)
 - Live Data: All charts and tables are based on real SQL queries and live user actions
 - Responsive Frontend: Built with Tailwind CSS
 
@@ -25,9 +28,9 @@ Built using **PostgreSQL**, **Flask**, **Tailwind CSS**, and **Chart.js**.
 | Layer     | Technology            |
 |-----------|------------------------|
 | Backend   | Flask (Python 3.8+)     |
-| Database  | PostgreSQL (14+)        |
+| Databases | PostgreSQL (14+), MongoDB (8.0+) |
 | Frontend  | Tailwind CSS, Chart.js  |
-| ORM       | psycopg2 (manual SQL)   |
+| ORM       | psycopg2, pymongo       |
 | Data Gen  | Faker (dummy data)      |
 
 ---
@@ -41,9 +44,10 @@ ecommerce-db/
 │   ├── templates/      # Jinja2 templates (HTML)
 │   └── app.py          # Flask backend
 ├── database/
-│   ├── schema.sql      # Database schema
+│   ├── schema.sql      # PostgreSQL schema
 │   ├── dummy_data.sql  # Generated dummy data
 │   └── queries.sql     # Example SQL queries
+├── migrate_to_mongodb.py  # MongoDB migration script
 ├── generate_data.py    # Faker script to generate dummy data
 ├── db_init.py          # Initializes database with schema + data
 ├── requirements.txt    # Python package requirements
@@ -62,130 +66,119 @@ pip install -r requirements.txt
 
 ---
 
-### 2. Start PostgreSQL
+### 2. Start PostgreSQL and MongoDB
 
-Make sure PostgreSQL is running locally:
+Make sure both databases are running locally:
 
+For PostgreSQL:
 ```bash
 brew services start postgresql
 ```
-or manually start your PostgreSQL service if you are on Linux/Windows.
+
+For MongoDB:
+```bash
+brew services start mongodb-community
+```
+
+or manually start your services if you are on Linux/Windows.
 
 ---
 
-### 3. Important: Update Database User
+### 3. Configure Database Connections
 
-Open `app/app.py` and modify these values to match your local PostgreSQL setup:
+Open `app/app.py` and modify these values to match your local setup:
 
 ```python
+# PostgreSQL Configuration
 DB_NAME = "postgres"
 DB_USER = "your_postgres_username"
 DB_PASSWORD = "your_postgres_password"
 DB_HOST = "localhost"
 DB_PORT = "5432"
+
+# MongoDB Configuration
+MONGO_URI = "mongodb://localhost:27017/"
 ```
-
-**Example** (original):
-
-```python
-DB_USER = "analiese_rasmussen"
-DB_PASSWORD = ""
-```
-
-Change `DB_USER` to match your actual PostgreSQL username.
 
 ---
 
-How to find your PostgreSQL username:
-You can check by running this command in your terminal:
+### 4. Initialize Databases
+
+1. Initialize PostgreSQL:
+```bash
+python db_init.py
+```
+
+2. Generate dummy data:
+```bash
+python generate_data.py
+```
+
+3. Migrate data to MongoDB:
+```bash
+python migrate_to_mongodb.py
+```
+
+---
+
+## Features in Detail
+
+### Customer Behavior Analysis
+- Customer segmentation (VIP, Regular, Casual)
+- Product performance tracking
+- Category analysis and retention rates
+- Peak shopping time analysis
+
+### Product Affinity
+- Identifies frequently bought together products
+- Calculates affinity percentages
+- Visualizes product relationships
+
+### Database Comparison
+- Side-by-side comparison of PostgreSQL and MongoDB
+- Query performance analysis
+- Data structure visualization
+- Use case recommendations
+
+---
+
+## Development
+
+### Running the Application
 
 ```bash
-psql -U postgres
+python app/app.py
 ```
 
-Otherwise, if you're on Mac/Linux, it’s often the same as your computer username.
-You can also list all available Postgres roles (usernames) by running:
+The application will be available at `http://localhost:5000`
 
+### Generating New Data
+
+To generate new dummy data:
 ```bash
-psql -c "\du"
+python generate_data.py
 ```
 
-### 4. Initialize the Database
+### Migrating Data
 
-First, create the database manually if needed:
-
+To migrate data from PostgreSQL to MongoDB:
 ```bash
-createdb postgres
+python migrate_to_mongodb.py
 ```
-
-Then run:
-
-```bash
-python3 generate_data.py
-python3 db_init.py
-```
-
-This will:
-- Create all tables (`schema.sql`)
-- Populate them with fake data (`dummy_data.sql`)
 
 ---
 
-### 5. Run the Flask App
+## Contributing
 
-```bash
-cd app
-python3 app.py
-```
-
-Then open your browser and visit:
-
-```
-http://127.0.0.1:5000/
-```
-
-Now you can browse products, rate products, add to cart, abandon carts, and view live dashboards.
-
----
-
-## Main Pages
-
-| Route              | Page                    | Description                                  |
-|--------------------|--------------------------|----------------------------------------------|
-| `/`                | Home                     | Welcome page                                |
-| `/products`        | Products                 | Browse and rate products, add to cart        |
-| `/cart`            | Cart                     | View your cart, checkout, or abandon cart    |
-| `/top-rated`       | Top Rated Products       | Live average ratings chart                  |
-| `/top-selling`     | Top Selling Products     | Top sales this quarter                      |
-| `/repeat-customers`| Repeat Customers         | Monthly repeat customer statistics          |
-| `/abandoned`       | Most Abandoned Products  | Products abandoned most often in carts      |
-
----
-
-## Notes
-
-- Abandoned products are tracked based on products left behind in carts that were abandoned.
-- Top Rated page updates live after rating products.
-- All analytics dashboards are powered by real database queries.
-
----
-
-## Credits
-
-This project was built as a complete educational simulation of an e-commerce backend and frontend system, focusing on real-time data-driven dashboards.
-
----
-
-## Future Improvements
-
-- Add real user authentication (login/logout)
-- Allow multiple quantities per cart item
-- Allow users to leave written comments with ratings
-- Add Admin dashboard for product and order management
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
 ## License
 
-Free to use for educational and demonstration purposes.
+This project is licensed under the MIT License - see the LICENSE file for details.
 

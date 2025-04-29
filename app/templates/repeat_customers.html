@@ -1,53 +1,72 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-6">Repeat Customers (Month over Month)</h1>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Repeat Customers (Month over Month)</h1>
 
-<!-- Chart -->
-<canvas id="repeatCustomersChart" width="600" height="400" class="mx-auto"></canvas>
+    <!-- Query Showcase -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Query Used</h2>
+        <div class="bg-gray-100 p-4 rounded">
+            <pre class="text-sm overflow-x-auto"><code>WITH monthly_orders AS (
+    SELECT user_id, DATE_TRUNC('month', order_date) AS month, COUNT(order_id) AS orders_count
+    FROM orders
+    GROUP BY user_id, month
+)
+SELECT TO_CHAR(month, 'Month YYYY') as month_text, COUNT(user_id) as repeat_customers
+FROM monthly_orders
+WHERE orders_count > 1
+GROUP BY month
+ORDER BY month;</code></pre>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">This query identifies customers who made multiple orders in the same month, showing the number of repeat customers over time.</p>
+    </div>
 
-<script>
-const ctx = document.getElementById('repeatCustomersChart').getContext('2d');
-const repeatCustomersChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: JSON.parse('{{ stats | map(attribute=0) | list | tojson | safe }}'),
-        datasets: [{
-            label: 'Repeat Customers',
-            data: JSON.parse('{{ stats | map(attribute=1) | list | tojson | safe }}'),
-            fill: false,
-            borderColor: 'rgba(16, 185, 129, 1)', // Tailwind green-500
-            tension: 0.3
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
+    <!-- Chart -->
+    <canvas id="repeatCustomersChart" width="600" height="400" class="mx-auto"></canvas>
+
+    <script>
+    const ctx = document.getElementById('repeatCustomersChart').getContext('2d');
+    const repeatCustomersChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: JSON.parse('{{ stats | map(attribute=0) | list | tojson | safe }}'),
+            datasets: [{
+                label: 'Repeat Customers',
+                data: JSON.parse('{{ stats | map(attribute=1) | list | tojson | safe }}'),
+                fill: false,
+                borderColor: 'rgba(16, 185, 129, 1)', // Tailwind green-500
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
             }
         }
-    }
-});
-</script>
+    });
+    </script>
 
-<!-- Table -->
-<div class="mt-10">
-    <h2 class="text-xl font-semibold mb-4">Detailed Repeat Customers</h2>
-    <table class="table-auto w-full bg-white rounded shadow">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="px-4 py-2">Month</th>
-                <th class="px-4 py-2">Repeat Customers</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for month, count in stats %}
-            <tr>
-                <td class="border px-4 py-2">{{ month }}</td>
-                <td class="border px-4 py-2">{{ count }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <!-- Table -->
+    <div class="mt-10">
+        <h2 class="text-xl font-semibold mb-4">Detailed Repeat Customers</h2>
+        <table class="table-auto w-full bg-white rounded shadow">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-2">Month</th>
+                    <th class="px-4 py-2">Repeat Customers</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for month, count in stats %}
+                <tr>
+                    <td class="border px-4 py-2">{{ month }}</td>
+                    <td class="border px-4 py-2">{{ count }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
 {% endblock %}

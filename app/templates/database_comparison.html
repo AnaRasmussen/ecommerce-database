@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center">Database Comparison</h1>
+    
+    <!-- Query Showcase -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Queries Used</h2>
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Complex Join Query (PostgreSQL)</h3>
+                <div class="bg-gray-100 p-4 rounded">
+                    <pre class="text-sm overflow-x-auto"><code>SELECT u.name, COUNT(o.order_id) as order_count, 
+       SUM(o.total_amount) as total_spent,
+       AVG(r.rating) as avg_rating
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+LEFT JOIN reviews r ON u.user_id = r.user_id
+GROUP BY u.name
+ORDER BY total_spent DESC
+LIMIT 5</code></pre>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">This query demonstrates PostgreSQL's ability to perform complex joins across multiple tables while aggregating data.</p>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Aggregation Pipeline (MongoDB)</h3>
+                <div class="bg-gray-100 p-4 rounded">
+                    <pre class="text-sm overflow-x-auto"><code>db.users.aggregate([
+    {
+        "$lookup": {
+            "from": "orders",
+            "localField": "_id",
+            "foreignField": "user_id",
+            "as": "orders"
+        }
+    },
+    {
+        "$lookup": {
+            "from": "reviews",
+            "localField": "_id",
+            "foreignField": "user_id",
+            "as": "reviews"
+        }
+    },
+    {
+        "$project": {
+            "name": 1,
+            "order_count": {"$size": "$orders"},
+            "total_spent": {"$sum": "$orders.total_amount"},
+            "avg_rating": {"$avg": "$reviews.rating"}
+        }
+    }
+])</code></pre>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">This MongoDB aggregation pipeline demonstrates how to perform similar operations using document-based queries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Comparison -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Performance Comparison</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">PostgreSQL Performance</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Query Execution Time</p>
+                        <div class="h-4 bg-gray-200 rounded-full">
+                            <div class="h-4 bg-blue-500 rounded-full" style="width: 70%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Average: 0.15s</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Write Performance</p>
+                        <div class="h-4 bg-gray-200 rounded-full">
+                            <div class="h-4 bg-blue-500 rounded-full" style="width: 60%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Average: 0.2s per write</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold mb-2">MongoDB Performance</h3>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-600">Query Execution Time</p>
+                        <div class="h-4 bg-gray-200 rounded-full">
+                            <div class="h-4 bg-green-500 rounded-full" style="width: 90%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Average: 0.05s</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Write Performance</p>
+                        <div class="h-4 bg-gray-200 rounded-full">
+                            <div class="h-4 bg-green-500 rounded-full" style="width: 95%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Average: 0.03s per write</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Structure Comparison -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Data Structure Comparison</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-semibold mb-2">PostgreSQL Structure</h3>
+                <div class="bg-gray-100 p-4 rounded mb-4">
+                    <div class="space-y-2">
+                        <div class="bg-blue-100 p-2 rounded">Users Table</div>
+                        <div class="bg-blue-100 p-2 rounded ml-4">Orders Table</div>
+                        <div class="bg-blue-100 p-2 rounded ml-4">Reviews Table</div>
+                        <div class="text-center text-gray-500">↓</div>
+                        <div class="bg-blue-200 p-2 rounded">Connected by IDs</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-semibold mb-2">Schema Example</h4>
+                    <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"><code>CREATE TABLE users (
+    user_id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    signup_source TEXT
+);
+
+CREATE TABLE orders (
+    order_id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(user_id),
+    order_date TIMESTAMP,
+    total_amount DECIMAL(10,2)
+);</code></pre>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">MongoDB Structure</h3>
+                <div class="bg-gray-100 p-4 rounded mb-4">
+                    <div class="space-y-2">
+                        <div class="bg-green-100 p-2 rounded">User Document</div>
+                        <div class="bg-green-100 p-2 rounded ml-4">Orders Array</div>
+                        <div class="bg-green-100 p-2 rounded ml-4">Reviews Array</div>
+                        <div class="text-center text-gray-500">↓</div>
+                        <div class="bg-green-200 p-2 rounded">All in one document</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-semibold mb-2">Document Example</h4>
+                    <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"><code>{
+    "_id": "user123",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "orders": [
+        {
+            "order_id": "order1",
+            "date": "2024-04-28",
+            "total": 99.99
+        }
+    ],
+    "reviews": [
+        {
+            "product_id": "prod1",
+            "rating": 5,
+            "comment": "Great product!"
+        }
+    ]
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Query Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- PostgreSQL Example -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4">PostgreSQL: Complex JOIN Query</h3>
+            <div class="bg-gray-100 p-4 rounded mb-4">
+                <pre class="text-sm overflow-x-auto"><code>SELECT u.name, COUNT(o.order_id) as order_count, 
+       SUM(o.total_amount) as total_spent,
+       AVG(r.rating) as avg_rating
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+LEFT JOIN reviews r ON u.user_id = r.user_id
+GROUP BY u.name
+ORDER BY total_spent DESC
+LIMIT 5</code></pre>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Orders</th>
+                            <th class="px-4 py-2">Total Spent</th>
+                            <th class="px-4 py-2">Avg Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pg_complex_query %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ user[0] }}</td>
+                            <td class="px-4 py-2">{{ user[1] or 0 }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(user[2] or 0) }}</td>
+                            <td class="px-4 py-2">{{ "%.1f"|format(user[3] or 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MongoDB Example -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4">MongoDB: Aggregation Pipeline</h3>
+            <div class="bg-gray-100 p-4 rounded mb-4">
+                <pre class="text-sm overflow-x-auto"><code>db.users.aggregate([
+    {
+        "$lookup": {
+            "from": "orders",
+            "localField": "_id",
+            "foreignField": "user_id",
+            "as": "orders"
+        }
+    },
+    {
+        "$lookup": {
+            "from": "reviews",
+            "localField": "_id",
+            "foreignField": "user_id",
+            "as": "reviews"
+        }
+    },
+    {
+        "$project": {
+            "name": 1,
+            "order_count": {"$size": "$orders"},
+            "total_spent": {"$sum": "$orders.total_amount"},
+            "avg_rating": {"$avg": "$reviews.rating"}
+        }
+    }
+])</code></pre>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Orders</th>
+                            <th class="px-4 py-2">Total Spent</th>
+                            <th class="px-4 py-2">Avg Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in mongo_complex_query %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ user.name }}</td>
+                            <td class="px-4 py-2">{{ user.order_count or 0 }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(user.total_spent or 0) }}</td>
+                            <td class="px-4 py-2">{{ "%.1f"|format(user.avg_rating or 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Use Cases -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">Best Use Cases</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-semibold mb-2">PostgreSQL is Best For:</h3>
+                <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                    <li>Financial applications requiring ACID compliance</li>
+                    <li>Applications with complex relationships and joins</li>
+                    <li>Systems requiring strong data consistency</li>
+                    <li>Applications with well-defined schemas</li>
+                    <li>Reporting and analytics with complex queries</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">MongoDB is Best For:</h3>
+                <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                    <li>Content management systems</li>
+                    <li>Real-time analytics and big data</li>
+                    <li>Applications with rapidly changing schemas</li>
+                    <li>High-write throughput applications</li>
+                    <li>Applications requiring horizontal scaling</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

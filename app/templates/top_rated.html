@@ -1,22 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-6">Top Rated Products</h1>
-<table class="table-auto w-full bg-white rounded shadow">
-    <thead>
-        <tr class="bg-gray-200">
-            <th class="px-4 py-2">Product</th>
-            <th class="px-4 py-2">Average Rating</th>
-            <th class="px-4 py-2">Reviews</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for name, avg_rating, num_reviews in products %}
-        <tr>
-            <td class="border px-4 py-2">{{ name }}</td>
-            <td class="border px-4 py-2">{{ avg_rating }}</td>
-            <td class="border px-4 py-2">{{ num_reviews }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Top Rated Products</h1>
+
+    <!-- Query Showcase -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Query Used</h2>
+        <div class="bg-gray-100 p-4 rounded">
+            <pre class="text-sm overflow-x-auto"><code>SELECT p.name, ROUND(AVG(r.rating),2) as avg_rating, COUNT(r.review_id) as num_reviews
+FROM products p
+JOIN reviews r ON p.product_id = r.product_id
+WHERE p.is_active = TRUE
+GROUP BY p.product_id
+ORDER BY avg_rating DESC, num_reviews DESC
+LIMIT 10;</code></pre>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">This query calculates the average rating for each product and counts the number of reviews, showing the top 10 highest-rated products.</p>
+    </div>
+
+    <table class="table-auto w-full bg-white rounded shadow">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="px-4 py-2">Product</th>
+                <th class="px-4 py-2">Average Rating</th>
+                <th class="px-4 py-2">Reviews</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for name, avg_rating, num_reviews in products %}
+            <tr>
+                <td class="border px-4 py-2">{{ name }}</td>
+                <td class="border px-4 py-2">{{ avg_rating }}</td>
+                <td class="border px-4 py-2">{{ num_reviews }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-center">Database Migration Visualization</h1>
+    
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Users</h3>
+            <div class="flex justify-between items-center">
+                <div class="text-blue-600">
+                    <span class="text-3xl font-bold">{{ pg_user_count }}</span>
+                    <span class="text-sm">PostgreSQL</span>
+                </div>
+                <div class="text-green-600">
+                    <span class="text-3xl font-bold">{{ mongo_user_count }}</span>
+                    <span class="text-sm">MongoDB</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Products</h3>
+            <div class="flex justify-between items-center">
+                <div class="text-blue-600">
+                    <span class="text-3xl font-bold">{{ pg_product_count }}</span>
+                    <span class="text-sm">PostgreSQL</span>
+                </div>
+                <div class="text-green-600">
+                    <span class="text-3xl font-bold">{{ mongo_product_count }}</span>
+                    <span class="text-sm">MongoDB</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Orders</h3>
+            <div class="flex justify-between items-center">
+                <div class="text-blue-600">
+                    <span class="text-3xl font-bold">{{ pg_order_count }}</span>
+                    <span class="text-sm">PostgreSQL</span>
+                </div>
+                <div class="text-green-600">
+                    <span class="text-3xl font-bold">{{ mongo_order_count }}</span>
+                    <span class="text-sm">MongoDB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-blue-600">PostgreSQL Users</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Email</th>
+                            <th class="px-4 py-2">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pg_users %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ user[1] }}</td>
+                            <td class="px-4 py-2">{{ user[2] }}</td>
+                            <td class="px-4 py-2">{{ user[3] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-green-600">MongoDB Users</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Email</th>
+                            <th class="px-4 py-2">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in mongo_users %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ user.name }}</td>
+                            <td class="px-4 py-2">{{ user.email }}</td>
+                            <td class="px-4 py-2">{{ user.signup_source }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-blue-600">PostgreSQL Products</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Category</th>
+                            <th class="px-4 py-2">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in pg_products %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ product[1] }}</td>
+                            <td class="px-4 py-2">{{ product[2] }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(product[3]) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-green-600">MongoDB Products</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">Name</th>
+                            <th class="px-4 py-2">Category</th>
+                            <th class="px-4 py-2">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in mongo_products %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ product.name }}</td>
+                            <td class="px-4 py-2">{{ product.category }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(product.price) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-blue-600">PostgreSQL Orders</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">User</th>
+                            <th class="px-4 py-2">Date</th>
+                            <th class="px-4 py-2">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in pg_orders %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ order[1] }}</td>
+                            <td class="px-4 py-2">{{ order[2] }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(order[3]) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-green-600">MongoDB Orders</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">User</th>
+                            <th class="px-4 py-2">Date</th>
+                            <th class="px-4 py-2">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in mongo_orders %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ order.user }}</td>
+                            <td class="px-4 py-2">{{ order.date }}</td>
+                            <td class="px-4 py-2">${{ "%.2f"|format(order.total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

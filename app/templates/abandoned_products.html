@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Most Abandoned Products</h1>
+
+    <!-- Query Showcase -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Query Used</h2>
+        <div class="bg-gray-100 p-4 rounded">
+            <pre class="text-sm overflow-x-auto"><code>SELECT p.name, COUNT(ci.cart_id) as abandoned_count
+FROM products p
+JOIN cart_items ci ON p.product_id = ci.product_id
+JOIN carts c ON ci.cart_id = c.cart_id
+WHERE c.is_checked_out = FALSE
+GROUP BY p.product_id
+ORDER BY abandoned_count DESC
+LIMIT 10;</code></pre>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">This query identifies products that are most frequently added to carts but not purchased, helping to understand potential lost sales opportunities.</p>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Abandonment Rate Visualization</h2>
+        <canvas id="abandonedChart" width="600" height="400" class="mx-auto"></canvas>
+    </div>
+
+    <script>
+    const ctx = document.getElementById('abandonedChart').getContext('2d');
+    const abandonedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: JSON.parse('{{ abandoned_products | map(attribute=0) | list | tojson | safe }}'),
+            datasets: [{
+                label: 'Times Abandoned',
+                data: JSON.parse('{{ abandoned_products | map(attribute=1) | list | tojson | safe }}'),
+                backgroundColor: 'rgba(239, 68, 68, 0.6)', // Tailwind red-500
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Times Abandoned'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Product Name'
+                    }
+                }
+            }
+        }
+    });
+    </script>
+
+    <!-- Table -->
+    <div class="mt-10">
+        <h2 class="text-xl font-semibold mb-4">Detailed Abandonment Data</h2>
+        <table class="table-auto w-full bg-white rounded shadow">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-2">Product Name</th>
+                    <th class="px-4 py-2">Times Abandoned</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for product in abandoned_products %}
+                <tr>
+                    <td class="border px-4 py-2">{{ product[0] }}</td>
+                    <td class="border px-4 py-2">{{ product[1] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 
